@@ -7,7 +7,11 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
+#include "calcium/lisp_eval.h"
+#include "calcium/lisp_macro.h"
+#include "calcium/lisp_reader.h"
 #include "calcium/lisp_state.h"
+#include "calcium/lisp_writer.h"
 
 /*****************************************************************************/
 /*                                    MAIN                                   */
@@ -27,7 +31,12 @@ replMain([[maybe_unused]] const APPargs* args)
 
     add_history(line);
 
-    printf("\n=> %s\n\n", line);
+    auto form = lispRead(&state, line);
+    form      = lispMacroExpand(&state, form);
+    form      = lispEvaluate(&state, form);
+    auto repr = lispWrite(&state, form);
+
+    printf("\n=> %s\n\n", repr);
 
     free(line);
   }
