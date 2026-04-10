@@ -3,6 +3,8 @@
 from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
 from pathlib import Path
 import os
+import subprocess
+import platform
 
 
 ###############################################################################
@@ -93,6 +95,24 @@ def configure_buildtree(config):
     Path(config['OBJDIR']).mkdir(exist_ok=True)
 
 
+def configure_readline(config):
+    env = os.environ.copy()
+
+    if platform.system() == 'Darwin':
+        brew_pkgconfig = [
+            "/usr/local/opt/readline/lib/pkgconfig",
+            "/opt/homebrew/opt/readline/lib/pkgconfig"
+        ]
+        env["PKG_CONFIG_PATH"] = ":".join(brew_pkgconfig + [env.get("PKG_CONFIG_PATH", "")])
+        config['CFLAGS']  += ' -mmacosx-version-min=26.0'
+        config['LDFLAGS'] += ' -mmacosx-version-min=26.0'
+
+    config['CFLAGS']  += ' ' + subprocess.check_output(['pkg-config', '--cflags', 'readline'],
+                                                        env=env, text=True)
+    config['LDFLAGS'] += ' ' + subprocess.check_output(['pkg-config', '--libs', 'readline'],
+                                                        env=env, text=True)
+
+
 ###############################################################################
 #                                     MAIN                                    #
 ###############################################################################
@@ -102,6 +122,7 @@ def main():
     args = parse_args()
     config = build_config(args)
 
+    configure_readline(config)
     configure_clangd(config)
     configure_makefile(config)
     configure_buildtree(config)
