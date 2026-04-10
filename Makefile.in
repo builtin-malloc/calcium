@@ -2,6 +2,11 @@
 #                                    PATHS                                    #
 ###############################################################################
 
+LIBSRC := $(wildcard @SRCDIR@/*.c)
+LIBOBJ := $(LIBSRC:@SRCDIR@/%.c=@OBJDIR@/%.o)
+LIBDEP := $(LIBOBJ:.o=.d)
+LIB    := @BINDIR@/libcalcium.a
+
 BINSRC := $(wildcard @APPDIR@/*.c)
 BINOBJ := $(BINSRC:@APPDIR@/%.c=@OBJDIR@/%.o)
 BINDEP := $(BINOBJ:.o=.d)
@@ -17,12 +22,17 @@ BIN    := @BINDIR@/calcium
 
 build: $(BIN)
 
-$(BIN): $(BINOBJ)
-	@CCLD@ -o $@ $(filter %.o,$^) @LDFLAGS@
+$(BIN): $(BINOBJ) $(LIB)
+	@CCLD@ -o $@ $(filter %.o,$^) @LDFLAGS@  -lcalcium
+$(LIB): $(LIBOBJ)
+	@AR@ @ARFLAGS@ $@ $(filter %.o,$^)
 
 $(BINOBJ): @OBJDIR@/%.o: @APPDIR@/%.c
 	@CC@ -o $@ -c $< @CFLAGS@
+$(LIBOBJ): @OBJDIR@/%.o: @SRCDIR@/%.c
+	@CC@ -o $@ -c $< @CFLAGS@
 
+-include $(LIBDEP)
 -include $(BINDEP)
 
 # CLEAN #######################################################################
@@ -33,6 +43,9 @@ clean:
 	rm -f $(BIN)
 	rm -f $(BINOBJ)
 	rm -f $(BINDEP)
+	rm -f $(LIB)
+	rm -f $(LIBOBJ)
+	rm -f $(LIBDEP)
 
 distclean:
 	rm -rf @BINDIR@

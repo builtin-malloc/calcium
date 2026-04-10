@@ -112,6 +112,10 @@ def configure_readline(config):
     config['LDFLAGS'] += ' ' + subprocess.check_output(['pkg-config', '--libs', 'readline'],
                                                         env=env, text=True)
 
+    # pkg-config sometimes adds a newline at the end
+    config['CLFAGS']  = config['CFLAGS'].rstrip()
+    config['LDFLAGS'] = config['LDFLAGS'].rstrip()
+
 
 ###############################################################################
 #                                     MAIN                                    #

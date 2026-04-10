@@ -7,6 +7,8 @@
 #include <readline/history.h>
 #include <readline/readline.h>
 
+#include "calcium/lisp_state.h"
+
 /*****************************************************************************/
 /*                                    MAIN                                   */
 /*****************************************************************************/
@@ -14,6 +16,9 @@
 [[nodiscard]] static int
 replMain([[maybe_unused]] const APPargs* args)
 {
+  LISPstate state;
+  if (!lispStateInitialize(&state)) return EXIT_FAILURE;
+
   while (true) {
     auto line = readline("> ");
     if (!line) break;
@@ -27,6 +32,7 @@ replMain([[maybe_unused]] const APPargs* args)
     free(line);
   }
 
+  lispStateFinalize(&state);
   return EXIT_SUCCESS;
 }
 
