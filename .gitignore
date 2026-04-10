@@ -53,3 +53,13 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Generated files
+
+Makefile
+.clangd
+
+# Compiler output
+
+obj/
+bin/

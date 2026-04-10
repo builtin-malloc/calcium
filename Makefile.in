@@ -1,0 +1,46 @@
+###############################################################################
+#                                    PATHS                                    #
+###############################################################################
+
+BINSRC := $(wildcard @APPDIR@/*.c)
+BINOBJ := $(BINSRC:@APPDIR@/%.c=@OBJDIR@/%.o)
+BINDEP := $(BINOBJ:.o=.d)
+BIN    := @BINDIR@/calcium
+
+###############################################################################
+#                                   TARGETS                                   #
+###############################################################################
+
+# BUILD #######################################################################
+
+.PHONY: build
+
+build: $(BIN)
+
+$(BIN): $(BINOBJ)
+	@CCLD@ -o $@ $(filter %.o,$^) @LDFLAGS@
+
+$(BINOBJ): @OBJDIR@/%.o: @APPDIR@/%.c
+	@CC@ -o $@ -c $< @CFLAGS@
+
+-include $(BINDEP)
+
+# CLEAN #######################################################################
+
+.PHONY: clean distclean
+
+clean:
+	rm -f $(BIN)
+	rm -f $(BINOBJ)
+	rm -f $(BINDEP)
+
+distclean:
+	rm -rf @BINDIR@
+	rm -rf @BINDIR@
+
+# CONFIGURE ###################################################################
+
+%: Makefile
+Makefile: Makefile.in configure
+	./configure
+
