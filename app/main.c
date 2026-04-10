@@ -20,8 +20,12 @@
 [[nodiscard]] static int
 replMain([[maybe_unused]] const APPargs* args)
 {
+  // TODO: When we have an empty line or the :q, we don't free its memory
+
   LISPstate state;
   if (!lispStateInitialize(&state)) return EXIT_FAILURE;
+
+  auto mem = lispStateGetMemory(&state);
 
   while (true) {
     auto line = readline("> ");
@@ -36,8 +40,9 @@ replMain([[maybe_unused]] const APPargs* args)
     form      = lispEvaluate(&state, form);
     auto repr = lispWrite(&state, form);
 
-    printf("\n=> %s\n\n", repr);
+    if (repr) printf("\n=> %s\n\n", repr);
 
+    lispMemoryFree(mem, repr);
     free(line);
   }
 
